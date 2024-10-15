@@ -6,6 +6,9 @@ __pycache__/
 # h5 models because I'm not going through that hell again
 *.h5
 
+# Also this because sometimes they're too big
+*.txt
+
 # C extensions
 *.so
 
