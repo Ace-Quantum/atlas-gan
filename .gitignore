@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# h5 models because I'm not going through that hell again
+*.h5
+
 # C extensions
 *.so
 
