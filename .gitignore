@@ -9,6 +9,9 @@ __pycache__/
 # Also this because sometimes they're too big
 *.txt
 
+# And this just based on an assumption
+*.npz
+
 # C extensions
 *.so
 
