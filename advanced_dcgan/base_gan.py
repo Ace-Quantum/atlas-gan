@@ -31,13 +31,16 @@ DATASET_CSV_PATH = "/content/atlas-gan/Butterflies_Moths/butterflies and moths.c
 BASE_IMAGE_DIR = "/content/atlas-gan/Butterflies_Moths"
 
 def load_and_preprocess_image(image_path):
-    # Load and decode the image
-    image = tf.io.read_file(image_path)
-    image = tf.image.decode_jpeg(image, channels=3)
-    # Resize and normalize the image
-    image = tf.image.resize(image, [128, 128])  # Resize to target dimensions
-    image = (image / 127.5) - 1  # Normalize to [-1, 1] for GAN
-    return image
+    try: 
+        # Load and decode the image
+        image = tf.io.read_file(image_path)
+        image = tf.image.decode_jpeg(image, channels=3)
+        # Resize and normalize the image
+        image = tf.image.resize(image, [128, 128])  # Resize to target dimensions
+        image = (image / 127.5) - 1  # Normalize to [-1, 1] for GAN
+        return image
+    except Exception as e:
+        return none
 
 def create_dataset(dataframe, split):
     # Filter dataset based on split
