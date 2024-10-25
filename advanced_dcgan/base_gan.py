@@ -40,7 +40,7 @@ def load_and_preprocess_image(image_path):
         image = (image / 127.5) - 1  # Normalize to [-1, 1] for GAN
         return image
     except Exception as e:
-        return none
+        return None
 
 def create_dataset(dataframe, split):
     # Filter dataset based on split
