@@ -27,8 +27,8 @@ BUFFER_SIZE = 60000
 BATCH_SIZE = 256
 
 # Paths
-DATASET_CSV_PATH = "/root/atlas-gan/Butterflies_Moths/butterflies and moths.csv"
-BASE_IMAGE_DIR = "/root/atlas-gan/Butterflies_Moths"
+DATASET_CSV_PATH = "/content/atlas-gan/Butterflies_Moths/butterflies and moths.csv"
+BASE_IMAGE_DIR = "/content/atlas-gan/Butterflies_Moths"
 
 def load_and_preprocess_image(image_path):
     # Load and decode the image
