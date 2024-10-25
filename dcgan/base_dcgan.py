@@ -16,6 +16,8 @@ import os
 import PIL
 from tensorflow.keras import layers
 import time
+import wandb
+from wandb.keras import WandCallback
 
 from IPython import display
 
@@ -138,6 +140,8 @@ def train_step(images):
     generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
     discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
 
+# Maybe make a way to log generated images
+
 def train(dataset, epochs):
     for epoch in range(epochs):
         start = time.time()
@@ -150,6 +154,8 @@ def train(dataset, epochs):
 
         if (epoch + 1) % 15 == 0:
             checkpoint.save(file_prefix = checkpoint_prefix)
+
+        # include wandb log here
 
         print('time for epoch {} is {} sec'.format(epoch + 1, time.time()-start))
 
@@ -171,3 +177,44 @@ def generate_and_save_images(model, epoch, test_input):
 
 train(train_dataset, EPOCHS)
 
+
+# Notes about the initial training:
+# epoch 01 - noise like normal
+
+# epoch 03 - This is where David had the start of some decent results
+#           This is where our experiments differed, 
+#           despite having the same code
+
+# epoch 05 - We're looking at the start of some rough numbers. 
+#           I think this is where I should consider early stopping as an option.
+#           Most Gans that I've seen benefit from shorter training times
+#           We'll see. That sounds pretty boring honestly
+#           But it's also the only difference between David and I's code.
+
+# epoch 10 - This does not look like numbers. They all look like eights.
+#           Bad eights at that. This frustrates me.
+
+# epoch 15 - I'm beginning to wonder if I'm remembering David's code right.
+#           It's possible he stopped training at 25 rather than 10.
+
+# epoch 20 - I see sevens and potential eights.
+#           threes too. Maybe some Zeroes
+
+# epoch 25 - These numbers are not much better. This GAN is not what was promised.
+
+# epoch 30 - Okay!! These are starting to look decent!
+#           I've got some nines. A few sevens. a one and some zeroes
+
+# epoch 35 - I can't tell if these are getting better.
+#           Maybe more defined.
+#           Threes are looking decent
+
+# epoch 40 - This looks really good!!!
+#           Idk if it's human level. But close
+
+# epoch 45 - Still decent but I feel we fell back some.
+#           I oughta actually learn how gradient descent works
+#           I'm going to be given a run for my money tonight.
+
+# epoch 50 - We fell back some
+#           RIP
