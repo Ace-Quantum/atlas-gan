@@ -173,3 +173,16 @@ def generate_and_save_images(model, epoch, test_input):
 
 train(train_dataset, EPOCHS)
 
+
+# Notes about the new training w/ hyperperameter change:
+# epoch 01 - noise like normal
+
+# epoch 02 - I'm noticing more centralized shapes.
+# epoch 11 - I'm seeing some nines and sevens
+# epoch 15 - Nothing major to note, we're seeing more definition though
+# epoch 20 - We're seeing some sixes and fives join the mix
+# epoch 28 - I think we've lost our progress
+# epoch 36 - I don't see much specific change personally
+# epoch 42 - Still nothing more of note
+# epoch 44 - Some of these look decent actually!
+# epoch 50 - I'm kind of proud of how some of these turned out.

@@ -182,3 +182,16 @@ def generate_and_save_images(model, epoch, test_input):
 
 train(train_dataset, EPOCHS)
 
+# Notes about the new training w/ precision change:
+# epoch 01 - noise like normal
+
+# epoch 02 - everything is dark
+# epoch 03 - everything is bright
+# epoch 10 - I see some 3s?
+#           Also this is going much faster than expected
+# epoch 20 - these aren't resembling much at this time
+# epoch 30 - there's maybe some nines
+# epoch 40 - These aren't looking half bad. Not yet passable, but not terrible.
+# epoch 45 - I think this is the best luck we've had so far
+# epoch 50 - It could do with a few more rounds of training
+#           But for now it doesn't look half bad.

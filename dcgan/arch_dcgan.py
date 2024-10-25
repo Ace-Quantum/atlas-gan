@@ -177,3 +177,25 @@ def generate_and_save_images(model, epoch, test_input):
 
 train(train_dataset, EPOCHS)
 
+# Notes about the new training w/ architecture change:
+# epoch 01 - noise like normal
+
+# Really quick, this is really quick.
+# And bad.
+# Like, really really bad. 
+
+# epoch 01 - noise
+# epoch 03 - We're cooking (ish)
+# epoch 05 - nvm
+# epoch 10 - Ehh? Probs not.
+# epoch 15 - There's something that may resemble numbers
+#           Not very well though.
+# epoch 20 - Yeah we've backtracked
+# epoch 25 - There's what might be some sevens
+#           Some ones and fives too
+# epoch 30 - Honestly this really isn't looking half bad
+#           Considering we've done the equivelant of turning off brain cells
+# epoch 35 - I don't think we've made much improvement but we haven't fallen back much either
+# epoch 40 - Same as before. I don't think we're getting much more than this
+# epoch 45 - We're definitely backtracking
+# epoch 50 - Again, not terrible for not having as many brain cells as the last one.
