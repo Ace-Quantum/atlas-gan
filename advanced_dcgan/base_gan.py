@@ -23,124 +23,75 @@ import pandas as pd
 
 from IPython import display
 
-# /root/atlas-gan/Butterflies_Moths
-# I need more monitors for my work.
-# Something to consider for a work from home set up
+BUFFER_SIZE = 60000
+BATCH_SIZE = 256
 
-# loading up and preprocessing the data
-df = pd.read_csv('/root/atlas-gan/Butterflies_Moths/butterflies and moths.csv')
+# Paths
+DATASET_CSV_PATH = "/root/atlas-gan/Butterflies_Moths/butterflies and moths.csv"
+BASE_IMAGE_DIR = "/root/atlas-gan/Butterflies_Moths"
 
-IMG_SIZE = (224, 224)
-BATCH_SIZE = 32
+def load_and_preprocess_image(image_path):
+    # Load and decode the image
+    image = tf.io.read_file(image_path)
+    image = tf.image.decode_jpeg(image, channels=3)
+    # Resize and normalize the image
+    image = tf.image.resize(image, [128, 128])  # Resize to target dimensions
+    image = (image / 127.5) - 1  # Normalize to [-1, 1] for GAN
+    return image
 
-def load_image(file_path):
-    img = tf.io.read_file(file_path)
-    img = tf.image.decode_jpeg(img, channels=3)
-    img = tf.image.resize(img, (224, 224))
-    return img
+def create_dataset(dataframe, split):
+    # Filter dataset based on split
+    filtered_df = dataframe[dataframe['data set'] == split]
+    image_paths = filtered_df['filepaths'].apply(lambda x: os.path.join(BASE_IMAGE_DIR, x)).tolist()
 
-class ButterflyMothDataset(tf.data.Dataset):
-    def __init__(self, df, base_dir, batch_size=32):
-
-        self.df = df
-        self.base_dir = base_dir
-        self.batch_size = batch_size
-        
-    def __len__(self):
-        return len(self.df)
     
-    def __getitem__(self, idx):
-
-        row = self.df.iloc[idx]
-        
-        # Construct full file path
-        file_path = os.path.join(self.base_dir, row['filepaths'])
-        
-        # Load image
-        img = load_image(file_path)
-        
-        # Convert label to categorical
-        label = tf.one_hot(row['class_id'], num_classes=100)
-        
-        return img, label
+    # Create a TensorFlow Dataset
+    paths_ds = tf.data.Dataset.from_tensor_slices(image_paths)
+    images_ds = paths_ds.map(load_and_preprocess_image, num_parallel_calls=tf.data.AUTOTUNE)
     
-    def __iter__(self):
-        for _ in range(len(self)):
-            yield next(iter(self))
+    return images_ds
+
+def load_datasets(batch_size=32):
+    # Load CSV into DataFrame
+    df = pd.read_csv(DATASET_CSV_PATH)
     
-    def __call__(self):
+    # Create train, validation, and test datasets
+    train_ds = create_dataset(df, 'train').shuffle(1000).batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    valid_ds = create_dataset(df, 'valid').batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    test_ds = create_dataset(df, 'test').batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    
+    return train_ds, valid_ds, test_ds
 
-        return tf.data.Dataset.from_generator(
-            lambda: self.__iter__(),
-            output_types=(tf.float32, tf.int64),
-            output_shapes=((224, 224, 3), (100,))
-        ).batch(self.batch_size).prefetch(tf.data.AUTOTUNE)
+# Load datasets
+train_dataset, valid_dataset, test_dataset = load_datasets(batch_size=32)
 
-# Load CSV file
-df = pd.read_csv('/Butterflies_Moths/butterflies and moths.csv')
-
-print(df.columns)
-
-# base_dir = '/root/atlas-gan/Butterflies_Moths'
-
-# # Define base directories for train, validation, and test datasets
-train_base_dir = '../Butterflies_Moths/train'
-valid_base_dir = '../Butterflies_Moths/valid'
-test_base_dir = '../Butterflies_Moths/train'
-
-# Create dataset instances
-# The problems start here
-train_dataset = ButterflyMothDataset(df[df['data set'] == 'train'], train_base_dir)
-valid_dataset = ButterflyMothDataset(df[df['data set'] == 'valid'], valid_base_dir)
-test_dataset = ButterflyMothDataset(df[df['data set'] == 'test'], test_base_dir)
-
-# Create ImageDataGenerator for data augmentation (optional)
-train_datagen = ImageDataGenerator(rescale=1./255,
-                                    rotation_range=15,
-                                    width_shift_range=0.1,
-                                    height_shift_range=0.1,
-                                    horizontal_flip=True)
-
-# Apply data augmentation to training dataset
-train_dataset = train_datagen.flow_from_dataframe(
-    dataframe=df[df['data_set'] == 'train'],
-    directory=train_base_dir,
-    x_col='filepaths',
-    y_col='class_id',
-    target_size=(224, 224),
-    batch_size=train_dataset.batch_size,
-    class_mode='categorical'
-)
-
-print(f"Training set size: {len(train_dataset)}")
-print(f"Validation set size: {len(valid_dataset)}")
-print(f"Test set size: {len(test_dataset)}")
-
+# # Example usage: set batch size
+# train_dataset = train_dataset.batch(32).prefetch(tf.data.AUTOTUNE)
+# valid_dataset = valid_dataset.batch(32).prefetch(tf.data.AUTOTUNE)
+# test_dataset = test_dataset.batch(32).prefetch(tf.data.AUTOTUNE)
 
 # creation of the model
 # Subject to change
 # I'm not sure to what yet
 def make_generator_model():
     model = tf.keras.Sequential()
-    model.add(layers.Dense(7*7*256, use_bias=False, input_shape=(100,)))
+    model.add(layers.Dense(16*16*256, use_bias=False, input_shape=(100,)))
     model.add(layers.BatchNormalization())
     model.add(layers.LeakyReLU())
 
-    model.add(layers.Reshape((7, 7, 256)))
-    assert model.output_shape == (None, 7, 7, 256)
+    model.add(layers.Reshape((16, 16, 256)))
 
-    model.add(layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding='same', use_bias=False))
-    assert model.output_shape == (None, 7, 7, 128)
+    model.add(layers.Conv2DTranspose(128, (5, 5), strides=(2, 2), padding='same', use_bias=False))
     model.add(layers.BatchNormalization())
     model.add(layers.LeakyReLU())
 
     model.add(layers.Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False))
-    assert model.output_shape == (None, 14, 14, 64)
+
     model.add(layers.BatchNormalization())
     model.add(layers.LeakyReLU())
 
-    model.add(layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh')) #I'm trying a different activation for funsies
-    assert model.output_shape == (None, 28, 28, 1)
+    model.add(layers.Conv2DTranspose(3, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh')) #I'm trying a different activation for funsies
+
 
     return model
 
@@ -154,7 +105,7 @@ plt.show()
 
 def make_discriminator_model():
     model = tf.keras.Sequential()
-    model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same', input_shape=[28, 28, 1]))
+    model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same', input_shape=[128, 128, 3]))
 
     model.add(layers.LeakyReLU())
     model.add(layers.Dropout(0.3))
@@ -225,6 +176,7 @@ def train(dataset, epochs):
         start = time.time()
 
         for image_batch in dataset:
+            # print(f"Image batch shape: {image_batch.shape}")  # For debugging
             train_step(image_batch)
 
         display.clear_output(wait=True)
